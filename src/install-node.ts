@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 import createDebug from 'debug';
 import { createGunzip } from 'zlib';
 import { basename, join } from 'path';
-import { createWriteStream, mkdirp } from 'fs-extra';
+import { createWriteStream, createReadStream, mkdirp, exists } from 'fs-extra';
 import { unzip, zipFromFile } from './unzip';
 
 const debug = createDebug('@zeit/fun:install-node');
@@ -42,11 +42,33 @@ export async function installNode(
 	arch: string = process.arch
 ): Promise<void> {
 	const tarballUrl = generateNodeTarballUrl(version, platform, arch);
-	debug('Downloading Node.js %s tarball %o', version, tarballUrl);
-	const res = await fetch(tarballUrl);
-	if (!res.ok) {
-		throw new Error(`HTTP request failed: ${res.status}`);
+	let nodeTarballStream = null;
+
+	const localTarballDir = process.env.ZEIT_FUN_NODEJS_TARBALL_DIR;
+	// Support local tarball file when networking unavailable
+	if (localTarballDir) {
+		debug('Use local tarball ', localTarballDir);
+		const tarballFilePath = join(localTarballDir, basename(tarballUrl));
+		let localTarballExists = await exists(tarballFilePath);
+
+		debug('Check local tarbal exists : ', tarballFilePath);
+		if (localTarballExists) {
+			nodeTarballStream = createReadStream(tarballFilePath);
+		}
 	}
+
+	// Try download from mirror if no local tarball
+	if (!nodeTarballStream) {
+		debug('Downloading Node.js %s tarball %o', version, tarballUrl);
+		const res = await fetch(tarballUrl);
+
+		if (!res.ok) {
+			throw new Error(`HTTP request failed: ${res.status}`);
+		}
+
+		nodeTarballStream = res.body;
+	}
+
 	if (platform === 'win32') {
 		// Put it in the `bin` dir for consistency with the tarballs
 		const finalDest = join(dest, 'bin');
@@ -55,7 +77,7 @@ export async function installNode(
 
 		debug('Saving Node.js %s zip file to %o', version, zipPath);
 		await pipe(
-			res.body,
+			nodeTarballStream,
 			createWriteStream(zipPath)
 		);
 
@@ -65,7 +87,7 @@ export async function installNode(
 	} else {
 		debug('Extracting Node.js %s tarball to %o', version, dest);
 		await pipe(
-			res.body,
+			nodeTarballStream,
 			createGunzip(),
 			extract({ strip: 1, C: dest })
 		);
