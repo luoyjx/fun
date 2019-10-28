@@ -130,7 +130,7 @@ export class RuntimeServer extends Server {
 		const payload: InvokeResult = {
 			StatusCode: statusCode,
 			ExecutedVersion: '$LATEST',
-			Payload: await text(req, { limit: '6mb' })
+			Payload: await text(req, { limit: '200mb' })
 		};
 
 		res.statusCode = 202;
@@ -148,7 +148,7 @@ export class RuntimeServer extends Server {
 			StatusCode: statusCode,
 			FunctionError: 'Handled',
 			ExecutedVersion: '$LATEST',
-			Payload: await text(req, { limit: '6mb' })
+			Payload: await text(req, { limit: '100mb' })
 		};
 
 		res.statusCode = 202;
@@ -166,7 +166,7 @@ export class RuntimeServer extends Server {
 			StatusCode: statusCode,
 			FunctionError: 'Unhandled',
 			ExecutedVersion: '$LATEST',
-			Payload: await text(req, { limit: '6mb' })
+			Payload: await text(req, { limit: '200mb' })
 		};
 
 		res.statusCode = 202;
