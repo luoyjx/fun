@@ -94,9 +94,7 @@ export async function createFunction(params: LambdaParams): Promise<Lambda> {
 	): Promise<T> {
 		const result = await fn.invoke({
 			InvocationType: 'RequestResponse',
-			Payload: Buffer.isBuffer(payload)
-				? payload
-				: JSON.stringify(payload)
+			Payload: JSON.stringify(payload)
 		});
 		let resultPayload = result.Payload;
 		if (typeof resultPayload !== 'string') {
