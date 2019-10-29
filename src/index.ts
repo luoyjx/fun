@@ -92,21 +92,17 @@ export async function createFunction(params: LambdaParams): Promise<Lambda> {
 	const fn: Lambda = async function<T>(
 		payload?: string | object
 	): Promise<T> {
-		const isPlainObject = Object.keys(payload).length > 0;
-
 		const result = await fn.invoke({
 			InvocationType: 'RequestResponse',
-			Payload: !isPlainObject ? JSON.stringify(payload) : (payload as any)
+			Payload:
+				typeof payload === 'string' ? payload : JSON.stringify(payload)
 		});
 		let resultPayload = result.Payload;
-		if (!isPlainObject && typeof resultPayload !== 'string') {
+		if (typeof resultPayload !== 'string') {
 			// For Buffer / Blob
 			resultPayload = String(resultPayload);
 		}
-		const parsedPayload =
-			typeof resultPayload === 'string'
-				? JSON.parse(resultPayload)
-				: resultPayload;
+		const parsedPayload = JSON.parse(resultPayload);
 		if (result.FunctionError) {
 			throw new LambdaError(parsedPayload);
 		} else {
