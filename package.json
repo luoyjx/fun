@@ -1,6 +1,6 @@
 {
   "name": "shimo-fun",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "description": "Local Lambda development environment",
   "main": "dist/src/index",
   "typings": "dist/src/index",
