@@ -29,9 +29,16 @@ export default class NativeProvider implements Provider {
 			create: this.createProcess.bind(this),
 			destroy: this.destroyProcess.bind(this)
 		};
+
+		const maxPoolSize =
+			process.env.ZEIT_FUN_MAX_POOL_SIZE &&
+			!isNaN(Number(process.env.ZEIT_FUN_MAX_POOL_SIZE))
+				? Number(process.env.ZEIT_FUN_MAX_POOL_SIZE)
+				: 10;
+
 		const opts = {
 			min: 0,
-			max: 10,
+			max: maxPoolSize,
 			acquireTimeoutMillis: ms('5s')
 
 			// XXX: These 3 options are commented out because they cause

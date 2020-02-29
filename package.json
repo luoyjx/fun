@@ -1,6 +1,6 @@
 {
   "name": "shimo-fun",
-  "version": "0.9.10",
+  "version": "0.9.11",
   "description": "Local Lambda development environment",
   "main": "dist/src/index",
   "typings": "dist/src/index",
@@ -8,7 +8,7 @@
   "repository": "zeit/fun",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "tsc",
+    "build": "npx tsc",
     "postbuild": "cpy --parents src test '!**/*.ts' dist",
     "test": "echo \"Node.js version: $(node -v)\\n\" && yarn build && best --include dist/test/test.js --verbose",
     "test-codecov": "nyc npm test",
